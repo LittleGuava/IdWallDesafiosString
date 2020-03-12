@@ -18,4 +18,20 @@ public abstract class StringFormatter {
      * @return
      */
     public abstract String format(String text);
+
+    /**
+     * It receives a text and should return it formatted
+     *
+     * @param text
+     * @return
+     */
+    public abstract String format(String text, Integer limit);
+
+    /**
+     * It receives a text and should return it formatted
+     *
+     * @param text
+     * @return
+     */
+    public abstract String format(String text, Integer limit, Boolean justify);
 }
