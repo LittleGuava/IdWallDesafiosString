@@ -27,7 +27,6 @@ public class IdwallFormatter extends StringFormatter {
         StringBuilder formattedText = new StringBuilder();
         if (text.length() > 40) {
             String[] linhas = text.split(StringUtils.LF);
-            //TODO MUDAR NOME DAS VARIAVEIS PARA INGLÊS
 
             for (String linhaASerFormatada : linhas) {
                 if (linhaASerFormatada.isEmpty()) {
@@ -53,21 +52,14 @@ public class IdwallFormatter extends StringFormatter {
 
             int tamanho = (aux + word).length();
             if (splittedWords.get(splittedWords.size() - 1).equals(word)) {
-//                formattedLines.append(aux).append(word);
-                formattedLines.append(justificado(aux.toString()+word));
-                justificado(aux.toString());
+                formattedLines.append(aux).append(word);
                 aux = new StringBuilder();
             } else if (tamanho == DEFAULT_NUMBER_OF_CHARS) {
-//                formattedLines.append(aux).append(word).append(StringUtils.LF);
-                formattedLines.append(justificado(aux.toString()+word)).append(StringUtils.LF);
-                System.out.println("Entrei aqui" + aux);
-                justificado(aux.toString());
+                aux.append(word).append(StringUtils.LF);
+                formattedLines.append(aux);
                 aux = new StringBuilder();
             } else if (tamanho > DEFAULT_NUMBER_OF_CHARS) {
-                System.out.println("Entrei aqui : ->>>>" + aux);
-                justificado(aux.toString());
-//                formattedLines.append(aux).append(StringUtils.LF);
-                formattedLines.append(justificado(aux.toString())).append(StringUtils.LF);
+                formattedLines.append(justificado(aux.toString().trim()).append(StringUtils.LF));
                 aux = new StringBuilder(word).append(StringUtils.SPACE);
             } else if (tamanho < 40) {
                 aux.append(word).append(StringUtils.SPACE);
@@ -76,21 +68,18 @@ public class IdwallFormatter extends StringFormatter {
         return formattedLines;
     }
 
-    public String justificado(String line) {
+    public StringBuilder justificado(String lines) {
+        StringBuilder line = new StringBuilder(lines);
         if (justified) {
-            if (line.length() == 40) {
-            } else {
+            while (line.length() < limit) {
                 int diferencaEntreTamanhoDaFraseEDoJustificado = limit - line.length();
-                for (int i = line.indexOf(' '); i < line.length(); i++) {
-                    if (line.charAt(i) == ' ' && diferencaEntreTamanhoDaFraseEDoJustificado > 0) {
-                        line = line.replace(" ", "  ");
-                        break;
-                    }
-                    if (i < line.length()-1 && diferencaEntreTamanhoDaFraseEDoJustificado > 0) {
-                        i = line.indexOf(' ');
+                for (int i = line.indexOf(" "); i < line.length(); i++) {
+                    if (Character.isWhitespace(line.charAt(i)) && !Character.isWhitespace(line.charAt(i + 1)) && diferencaEntreTamanhoDaFraseEDoJustificado > 0) {
+                        line.insert(i, " ");
+                        i++;
+                        diferencaEntreTamanhoDaFraseEDoJustificado--;
                     }
                 }
-                System.out.println(StringUtils.countMatches(line, " ") + "------------>" + diferencaEntreTamanhoDaFraseEDoJustificado);
             }
         }
         System.out.println(line);
