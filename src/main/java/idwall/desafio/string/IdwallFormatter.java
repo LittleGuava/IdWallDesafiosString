@@ -10,11 +10,7 @@ import java.util.List;
  */
 public class IdwallFormatter extends StringFormatter {
 
-    private static final Integer DEFAULT_NUMBER_OF_CHARS = 40;
-    private static final Boolean DEFAULT_JUSTIFY = true;
-
-    private int limit = DEFAULT_NUMBER_OF_CHARS;
-    private boolean justified = DEFAULT_JUSTIFY;
+    private StringBuilder formattedText = new StringBuilder();
 
     /**
      * Should format as described in the challenge
@@ -24,53 +20,46 @@ public class IdwallFormatter extends StringFormatter {
      */
     @Override
     public String format(String text) {
-        StringBuilder formattedText = new StringBuilder();
-        if (text.length() > 40) {
-            String[] linhas = text.split(StringUtils.LF);
-
-            for (String linhaASerFormatada : linhas) {
-                if (linhaASerFormatada.isEmpty()) {
-                    formattedText.append(StringUtils.LF);
-                } else {
-                    formattedText.append(processLines(linhaASerFormatada)).append(StringUtils.LF);
-                }
-            }
-
-        } else {
-            return text;
-        }
-
-        return formattedText.toString();
+        return format(text, limit, justify);
     }
 
-    private StringBuilder processLines(String linhaASerFormatada) {
+    private void processLines(String lineToBeProcessed) {
         StringBuilder formattedLines = new StringBuilder();
-        List<String> splittedWords = Arrays.asList(linhaASerFormatada.split(" "));
-        StringBuilder aux = new StringBuilder();
+        List<String> splittedWords = Arrays.asList(lineToBeProcessed.split(" "));
+        StringBuilder provisionalPhrase = new StringBuilder();
 
         for (String word : splittedWords) {
-
-            int tamanho = (aux + word).length();
-            if (splittedWords.get(splittedWords.size() - 1).equals(word)) {
-                formattedLines.append(aux).append(word);
-                aux = new StringBuilder();
-            } else if (tamanho == DEFAULT_NUMBER_OF_CHARS) {
-                aux.append(word).append(StringUtils.LF);
-                formattedLines.append(aux);
-                aux = new StringBuilder();
-            } else if (tamanho > DEFAULT_NUMBER_OF_CHARS) {
-                formattedLines.append(justificado(aux.toString().trim()).append(StringUtils.LF));
-                aux = new StringBuilder(word).append(StringUtils.SPACE);
-            } else if (tamanho < 40) {
-                aux.append(word).append(StringUtils.SPACE);
+            int newLength = (provisionalPhrase + word).length();
+            if (isLastParagraphPhrase(splittedWords, word)) {
+                getLastLineAndAddToFormattedText(provisionalPhrase, word);
+            } else if (newLength == limit) {
+                formattedText.append(provisionalPhrase).append(word).append(StringUtils.LF);
+                provisionalPhrase = new StringBuilder();
+            } else if (newLength > limit) {
+                provisionalPhrase = addTextToFormattedLines(provisionalPhrase, word);
+            } else if (newLength < 40) {
+                provisionalPhrase.append(word).append(StringUtils.SPACE);
             }
         }
-        return formattedLines;
     }
 
-    public StringBuilder justificado(String lines) {
+    private StringBuilder addTextToFormattedLines(StringBuilder provisionalPhrase, String word) {
+        formattedText.append(justifyTextIfNecessary(provisionalPhrase.toString().trim()).append(StringUtils.LF));
+        provisionalPhrase = new StringBuilder(word).append(StringUtils.SPACE);
+        return provisionalPhrase;
+    }
+
+    private void getLastLineAndAddToFormattedText(StringBuilder provisionalPhrase, String word) {
+        formattedText.append(provisionalPhrase).append(word);
+    }
+
+    private boolean isLastParagraphPhrase(List<String> splittedWords, String word) {
+        return splittedWords.get(splittedWords.size() - 1).equals(word);
+    }
+
+    public StringBuilder justifyTextIfNecessary(String lines) {
         StringBuilder line = new StringBuilder(lines);
-        if (justified) {
+        if (justify) {
             while (line.length() < limit) {
                 int diferencaEntreTamanhoDaFraseEDoJustificado = limit - line.length();
                 for (int i = line.indexOf(" "); i < line.length(); i++) {
@@ -82,17 +71,34 @@ public class IdwallFormatter extends StringFormatter {
                 }
             }
         }
-        System.out.println(line);
         return line;
     }
 
     @Override
     public String format(String text, Integer limit) {
-        return null;
+        this.limit = limit;
+        return format(text, limit, justify);
     }
 
     @Override
     public String format(String text, Integer limit, Boolean justify) {
-        return null;
+        this.limit = limit;
+        this.justify = justify;
+
+        if (text.length() > 40) {
+            String[] linhas = text.split(StringUtils.LF);
+
+            for (String linhaASerFormatada : linhas) {
+                if (!linhaASerFormatada.isEmpty()) {
+                    processLines(linhaASerFormatada);
+                }
+                formattedText.append(StringUtils.LF);
+            }
+
+        } else {
+            return text;
+        }
+
+        return formattedText.toString();
     }
 }
